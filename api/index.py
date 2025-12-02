@@ -45,18 +45,17 @@ app = Flask(__name__)
 
 # Note: we use SPOTIFY_TOKEN (module-level) as the stored access token
 
-
 def get_access_token():
     """Get or refresh Spotify access token."""
     global SPOTIFY_TOKEN
     if SPOTIFY_TOKEN != "":
         print("Using cached access token")
         return SPOTIFY_TOKEN
-
+    
     print("No cached token, refreshing...")
     SPOTIFY_TOKEN = refresh_spotify_token(
-        SPOTIFY_REFRESH_TOKEN,
-        SPOTIFY_CLIENT_ID,
+        SPOTIFY_REFRESH_TOKEN, 
+        SPOTIFY_CLIENT_ID, 
         SPOTIFY_SECRET_ID,
         REFRESH_TOKEN_URL
     )
@@ -66,12 +65,12 @@ def get_access_token():
 def get(url):
     """Fetch data from Spotify API with token refresh handling."""
     global SPOTIFY_TOKEN
-
+    
     if SPOTIFY_TOKEN == "":
         SPOTIFY_TOKEN = get_access_token()
-
+    
     print(f"Using access token which is already cached: {SPOTIFY_TOKEN}")
-
+    
     try:
         data = fetch_spotify_data(url, SPOTIFY_TOKEN)
         return data
@@ -95,7 +94,7 @@ def makeSVG(data, background_color, border_color):
     barCSS = generate_bar_css(barCount)
 
     if not "is_playing" in data:
-        # contentBar = "" #Shows/Hides the EQ bar if no song is currently playing
+        #contentBar = "" #Shows/Hides the EQ bar if no song is currently playing
         currentStatus = "Recently played:"
         recentPlays = get(RECENTLY_PLAYING_URL)
         recentPlaysLength = len(recentPlays["items"])
@@ -112,10 +111,8 @@ def makeSVG(data, background_color, border_color):
         songPalette = generate_color_palette(None, 2, PLACEHOLDER_IMAGE)
     else:
         image = load_image_as_base64(item["album"]["images"][1]["url"])
-        barPalette = generate_color_palette(
-            item["album"]["images"][1]["url"], 4, PLACEHOLDER_IMAGE)
-        songPalette = generate_color_palette(
-            item["album"]["images"][1]["url"], 2, PLACEHOLDER_IMAGE)
+        barPalette = generate_color_palette(item["album"]["images"][1]["url"], 4, PLACEHOLDER_IMAGE)
+        songPalette = generate_color_palette(item["album"]["images"][1]["url"], 2, PLACEHOLDER_IMAGE)
 
     artistName = item["artists"][0]["name"].replace("&", "&amp;")
     songName = item["name"].replace("&", "&amp;")
