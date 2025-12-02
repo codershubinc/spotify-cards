@@ -3,9 +3,10 @@
 from io import BytesIO
 from base64 import b64encode, b64decode
 from urllib.parse import urlparse
+from typing import List, Tuple, Union
 
 import requests
-from colorthief import ColorThief
+from colorthief import ColorThief  # type: ignore
 
 
 def load_image_as_base64(url: str) -> str:
@@ -22,7 +23,9 @@ def load_image_as_base64(url: str) -> str:
     return b64encode(response.content).decode("ascii")
 
 
-def generate_color_palette(album_art, color_count: int, placeholder_image: str) -> list:
+def generate_color_palette(album_art: Union[str, bytes, bytearray, None],
+                           color_count: int,
+                           placeholder_image: str) -> List[Tuple[int, int, int]]:
     """
     Generate a color palette from an album image using ColorThief.
 

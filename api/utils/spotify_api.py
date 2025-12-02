@@ -1,9 +1,10 @@
 """Spotify API data fetching utilities."""
 
+from typing import Dict, Any
 import requests
 
 
-def fetch_spotify_data(url: str, access_token: str) -> dict:
+def fetch_spotify_data(url: str, access_token: str) -> Dict[str, Any]:
     """
     Fetch data from Spotify API endpoint.
 
