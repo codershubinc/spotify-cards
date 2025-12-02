@@ -6,10 +6,10 @@ import random
 def generate_bar_css(bar_count: int) -> str:
     """
     Generate CSS for animated equalizer bars.
-    
+
     Args:
         bar_count: Number of bars to generate CSS for
-    
+
     Returns:
         CSS string with animation rules for each bar
     """
@@ -33,10 +33,10 @@ def generate_bar_css(bar_count: int) -> str:
 def generate_bar_html(bar_count: int) -> str:
     """
     Generate HTML divs for equalizer bars.
-    
+
     Args:
         bar_count: Number of bar divs to generate
-    
+
     Returns:
         HTML string with bar div elements
     """

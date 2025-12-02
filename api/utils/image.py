@@ -11,10 +11,10 @@ from colorthief import ColorThief
 def load_image_as_base64(url: str) -> str:
     """
     Fetch an image from a URL and return it as base64-encoded string.
-    
+
     Args:
         url: Image URL to fetch
-    
+
     Returns:
         Base64-encoded image data
     """
@@ -25,15 +25,15 @@ def load_image_as_base64(url: str) -> str:
 def generate_color_palette(album_art, color_count: int, placeholder_image: str) -> list:
     """
     Generate a color palette from an album image using ColorThief.
-    
+
     Args:
         album_art: Can be a URL string, raw bytes, or None
         color_count: Number of colors to extract from the image
         placeholder_image: Base64-encoded placeholder image to use as fallback
-    
+
     Returns:
         List of RGB tuples representing the color palette
-    
+
     Notes:
         - If album_art is bytes/bytearray, uses them directly
         - If album_art is a string URL from Spotify/scdn domains, fetches the image

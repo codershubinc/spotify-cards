@@ -6,14 +6,14 @@ import requests
 def fetch_spotify_data(url: str, access_token: str) -> dict:
     """
     Fetch data from Spotify API endpoint.
-    
+
     Args:
         url: Spotify API endpoint URL
         access_token: Valid Spotify access token
-    
+
     Returns:
         JSON response from Spotify API
-    
+
     Raises:
         Exception: If API returns 204 (no data) or other errors
     """
