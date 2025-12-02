@@ -5,15 +5,6 @@ A Flask application that generates dynamic SVG widgets displaying
 currently playing or recently played Spotify tracks.
 """
 
-from utils import (
-    refresh_spotify_token,
-    fetch_spotify_data,
-    load_image_as_base64,
-    generate_color_palette,
-    generate_bar_css,
-    generate_bar_html,
-    load_template_config
-)
 import os
 import sys
 import random
@@ -24,6 +15,26 @@ from flask import Flask, Response, render_template, request
 # Add the api directory to the path for Vercel compatibility
 sys.path.insert(0, os.path.dirname(__file__))
 
+try:
+    from .utils import (
+        refresh_spotify_token,
+        fetch_spotify_data,
+        load_image_as_base64,
+        generate_color_palette,
+        generate_bar_css,
+        generate_bar_html,
+        load_template_config
+    )
+except ImportError:
+    from utils import (
+        refresh_spotify_token,
+        fetch_spotify_data,
+        load_image_as_base64,
+        generate_color_palette,
+        generate_bar_css,
+        generate_bar_html,
+        load_template_config
+    )
 
 load_dotenv(find_dotenv())
 
