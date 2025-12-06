@@ -57,5 +57,5 @@ def generate_color_palette(album_art: Union[str, bytes, bytearray, None],
         img_bytes = b64decode(placeholder_image)
 
     colorthief = ColorThief(BytesIO(img_bytes))
-    palette = colorthief.get_palette(color_count)
+    palette = colorthief.get_palette(color_count)  # type: ignore
     return palette
