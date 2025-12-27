@@ -10,7 +10,7 @@ import sys
 import random
 from typing import Dict, Any
 from dotenv import load_dotenv, find_dotenv
-from flask import Flask, Response, render_template, request
+from flask import Flask, Response, render_template, request, jsonify
 
 # Add the api directory to the path for Vercel compatibility
 sys.path.insert(0, os.path.dirname(__file__))
@@ -154,6 +154,57 @@ def makeSVG(data: Dict[str, Any], background_color: str, border_color: str) -> s
     }
 
     return render_template(load_template_config(), **dataDict)
+
+
+@app.route('/json')
+def json_response():
+    """Return a JSON representation of the current or recently played track."""
+    background_color = request.args.get('background_color') or "181414"
+    border_color = request.args.get('border_color') or "181414"
+
+    try:
+        data = get(NOW_PLAYING_URL)
+    except Exception:
+        data = get(RECENTLY_PLAYING_URL)
+
+    # Determine whether this is a currently playing item or a recent play
+    if not "is_playing" in data:
+        recentPlays = data
+        recentPlaysLength = len(recentPlays.get("items", []))
+        if recentPlaysLength == 0:
+            return jsonify({"error": "no recent plays found"}), 404
+        itemIndex = random.randint(0, recentPlaysLength - 1)
+        item = recentPlays["items"][itemIndex]["track"]
+        status = "Recently played"
+        is_playing = False
+    else:
+        item = data.get("item")
+        status = "Now playing" if data.get("is_playing") else "Recently played"
+        is_playing = bool(data.get("is_playing"))
+
+    if not item:
+        return jsonify({"error": "no track data available"}), 404
+
+    album = item.get("album", {})
+    images = album.get("images", [])
+
+    resp_data = {
+        "is_playing": is_playing,
+        "status": status,
+        "artist": item.get("artists", [{}])[0].get("name"),
+        "artist_uri": item.get("artists", [{}])[0].get("external_urls", {}).get("spotify"),
+        "track": item.get("name"),
+        "track_uri": item.get("external_urls", {}).get("spotify"),
+        "album": album.get("name"),
+        "album_images": images,
+        "background_color": background_color,
+        "border_color": border_color,
+        "raw": data,
+    }
+
+    resp = jsonify(resp_data)
+    resp.headers["Cache-Control"] = "s-maxage=1"
+    return resp
 
 
 @app.route("/", defaults={"path": ""})
