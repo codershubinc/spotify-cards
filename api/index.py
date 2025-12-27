@@ -11,6 +11,7 @@ import random
 from typing import Dict, Any
 from dotenv import load_dotenv, find_dotenv
 from flask import Flask, Response, render_template, request, jsonify
+from flask_cors import CORS
 
 # Add the api directory to the path for Vercel compatibility
 sys.path.insert(0, os.path.dirname(__file__))
@@ -58,6 +59,18 @@ RECENTLY_PLAYING_URL = (
 )
 
 app = Flask(__name__)
+
+# Allow CORS for localhost origins (useful for local dev frontends)
+CORS(app, resources={
+    r"/json": {"origins": [
+        "http://localhost:3000",
+        "http://localhost:5000",
+        "http://localhost:8000",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5000",
+        "http://127.0.0.1:8000",
+    ]}
+})
 
 # Note: we use SPOTIFY_TOKEN (module-level) as the stored access token
 
