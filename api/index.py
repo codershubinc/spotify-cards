@@ -248,59 +248,5 @@ def catch_all(path=""):
     return resp
 
 
-# ---------------------------------------------------------------------------
-# TEMPORARY AUTH ROUTES — remove after obtaining refresh token
-# ---------------------------------------------------------------------------
-import urllib.parse
-
-SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
-SPOTIFY_SCOPES = "user-read-currently-playing user-read-recently-played"
-CALLBACK_URL = "http://127.0.0.1:5000/callback"
-
-
-@app.route("/login")
-def login():
-    params = {
-        "client_id": SPOTIFY_CLIENT_ID,
-        "response_type": "code",
-        "redirect_uri": CALLBACK_URL,
-        "scope": SPOTIFY_SCOPES,
-    }
-    auth_url = f"{SPOTIFY_AUTH_URL}?{urllib.parse.urlencode(params)}"
-    return f'<a href="{auth_url}">Click here to authorize with Spotify</a>'
-
-
-@app.route("/callback")
-def callback():
-    code = request.args.get("code")
-    error = request.args.get("error")
-    if error or not code:
-        return f"Authorization failed: {error}", 400
-
-    from utils.auth import get_auth_header
-    response = requests.post(
-        REFRESH_TOKEN_URL,
-        data={
-            "grant_type": "authorization_code",
-            "code": code,
-            "redirect_uri": CALLBACK_URL,
-        },
-        headers={
-            "Authorization": f"Basic {get_auth_header(SPOTIFY_CLIENT_ID, SPOTIFY_SECRET_ID)}",
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-    ).json()
-
-    refresh_token = response.get("refresh_token", "NOT FOUND")
-    access_token = response.get("access_token", "NOT FOUND")
-    return (
-        f"<h2>Tokens</h2>"
-        f"<p><b>Refresh Token</b> (save this in your .env as SPOTIFY_REFRESH_TOKEN):<br>"
-        f"<code>{refresh_token}</code></p>"
-        f"<p><b>Access Token</b> (temporary):<br>"
-        f"<code>{access_token}</code></p>"
-    )
-
-
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True, port=os.getenv("PORT") or 5000)
