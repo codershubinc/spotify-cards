@@ -8,6 +8,7 @@ currently playing or recently played Spotify tracks.
 import os
 import sys
 import random
+import requests
 from typing import Dict, Any
 from dotenv import load_dotenv, find_dotenv
 from flask import Flask, Response, render_template, request, jsonify
@@ -115,6 +116,7 @@ def get(url: str) -> Dict[str, Any]:
                 REFRESH_TOKEN_URL
             )
             return fetch_spotify_data(url, spotify_token)
+        print(f"Spotify API error for {url}: {e}")
         raise
 
 
@@ -178,7 +180,10 @@ def json_response():
     try:
         data = get(NOW_PLAYING_URL)
     except Exception:
-        data = get(RECENTLY_PLAYING_URL)
+        try:
+            data = get(RECENTLY_PLAYING_URL)
+        except Exception as  e :
+            return jsonify({"error": "no track data available"  }), 404
 
     # Determine whether this is a currently playing item or a recent play
     if not "is_playing" in data:
@@ -230,7 +235,10 @@ def catch_all(path=""):
     try:
         data = get(NOW_PLAYING_URL)
     except Exception:
-        data = get(RECENTLY_PLAYING_URL)
+        try:
+            data = get(RECENTLY_PLAYING_URL)
+        except Exception:
+            return Response("", mimetype="image/svg+xml", status=404)
 
     svg = makeSVG(data, background_color, border_color)
 
@@ -238,6 +246,60 @@ def catch_all(path=""):
     resp.headers["Cache-Control"] = "s-maxage=1"
 
     return resp
+
+
+# ---------------------------------------------------------------------------
+# TEMPORARY AUTH ROUTES — remove after obtaining refresh token
+# ---------------------------------------------------------------------------
+import urllib.parse
+
+SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
+SPOTIFY_SCOPES = "user-read-currently-playing user-read-recently-played"
+CALLBACK_URL = "http://127.0.0.1:5000/callback"
+
+
+@app.route("/login")
+def login():
+    params = {
+        "client_id": SPOTIFY_CLIENT_ID,
+        "response_type": "code",
+        "redirect_uri": CALLBACK_URL,
+        "scope": SPOTIFY_SCOPES,
+    }
+    auth_url = f"{SPOTIFY_AUTH_URL}?{urllib.parse.urlencode(params)}"
+    return f'<a href="{auth_url}">Click here to authorize with Spotify</a>'
+
+
+@app.route("/callback")
+def callback():
+    code = request.args.get("code")
+    error = request.args.get("error")
+    if error or not code:
+        return f"Authorization failed: {error}", 400
+
+    from utils.auth import get_auth_header
+    response = requests.post(
+        REFRESH_TOKEN_URL,
+        data={
+            "grant_type": "authorization_code",
+            "code": code,
+            "redirect_uri": CALLBACK_URL,
+        },
+        headers={
+            "Authorization": f"Basic {get_auth_header(SPOTIFY_CLIENT_ID, SPOTIFY_SECRET_ID)}",
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+    ).json()
+
+    refresh_token = response.get("refresh_token", "NOT FOUND")
+    access_token = response.get("access_token", "NOT FOUND")
+    return (
+        f"<h2>Tokens</h2>"
+        f"<p><b>Refresh Token</b> (save this in your .env as SPOTIFY_REFRESH_TOKEN):<br>"
+        f"<code>{refresh_token}</code></p>"
+        f"<p><b>Access Token</b> (temporary):<br>"
+        f"<code>{access_token}</code></p>"
+    )
 
 
 if __name__ == "__main__":
