@@ -1,14 +1,6 @@
-"""
-Spotify Now Playing Widget API
-
-A Flask application that generates dynamic SVG widgets displaying
-currently playing or recently played Spotify tracks.
-"""
-
 import os
 import sys
-import random
-import requests
+import random 
 from typing import Dict, Any
 from dotenv import load_dotenv, find_dotenv
 from flask import Flask, Response, render_template, request, jsonify
